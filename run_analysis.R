@@ -35,12 +35,48 @@ subject <- rbind(subject_train, subject_test)
 data <- data.frame(subject, y, X)
 
 #2. Extracts only the measurements on the mean and standard deviation for each measurement.
-#mean calculation
-measurementMean <- apply(X, 2, mean) #applies function 'mean' to 2nd
-#dimension (columns of X)
-#standard deviation calculation
-measurementSD <- apply(X, 2, sd) #applies function 'sd' to 2nd
-#dimension (columns of X)
+#mean measurement
+#4. Appropriately labels the data set with descriptive variable names.
+
+#set the working directory to be the UCI HAR Dataset folder that contains
+#the features.txt file
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project/UCI HAR Dataset")
+
+#read in the features.txt into R that contains the 561 feature names
+features <- read.table("features.txt")
+class(features[,1]) #integer
+class(features[,2]) #factor
+features[,2] <- as.character(features[,2])
+class(features[,2]) #character
+
+#replace the '-', ',', '(', ')', characters in the features character
+#vector with '_', "", "", and "" respectively
+features[,2] <- gsub("-", "_", features[,2])
+features[,2] <- gsub(",", "", features[,2])
+features[,2] <- gsub(")", "", features[,2])
+features[,2] <- gsub("\\(", "", features[,2])
+
+#set the working directory to be the Course Project folder
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project")
+
+featureNames <- vector(mode="character")
+featureColumns <- vector(mode="numeric")
+
+i <- 0
+for (name in features[,2]) {
+        i <- i + 1
+        print(i)
+        meanMatch = grepl("mean", name)
+        sdMatch = grepl("std", name)
+        if (meanMatch || sdMatch) {
+                featureNames <- append(featureNames, name)
+                featureColumns <- append(featureColumns, i)
+        }
+}
+
+dataset <- cbind(subject, y, X[, featureColumns])
+
+names(dataset) <- c("subjectID", "activity", featureNames)
 
 #3. Uses descriptive activity names to name the activities in the data set
 #set the working directory to be the UCI HAR Dataset folder that contains
@@ -63,28 +99,7 @@ for (i in seq(activity[,1])) {
 }
 
 #modify the data data frame with the modified y column
-data <- data.frame(subject, y, X)
-
-#4. Appropriately labels the data set with descriptive variable names.
-#set the working directory to be the UCI HAR Dataset folder that contains
-#the features.txt file 
-setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project/UCI HAR Dataset")
-
-#read in the features.txt into R that contains the 561 feature names
-featuresFile <- read.table("features.txt")
-featuresFactor <- featuresFile[,2]
-class(featuresFactor) #factor
-features <- as.character(featuresFactor)
-class(features) #character
-
-#replace the '-', ',', '(', ')', characters in the features character
-#vector with '_', "", "", and "" respectively
-features <- gsub("-", "_", features)
-features <- gsub(",", "", features)
-features <- gsub(")", "", features)
-features <- gsub("\\(", "", features)
-
-names(data) <- c("subjectID", "activity", features)
+dataset[,2] <- y
 
 #set the working directory to be the Course Project folder
 setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project")
@@ -94,11 +109,11 @@ setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Proje
 #initialize the columns of the tidy data frame
 subjectID <- rep(1:30, 1, each=6)
 activityVector <- rep(activity[,2], 30)
-measurement <- matrix(rep(0, 561*180), nrow=180)
+measurement <- matrix(rep(0, (ncol(dataset)-2)*180), nrow=180)
 tidy <- data.frame(subjectID, activityVector, measurement)
 
 #name the columns of the tidy data frame
-names(tidy) <- c("subjectID", "activity", features)
+names(tidy) <- c("subjectID", "activity", featureNames)
 
 #populate the tidy data set with the average of each variable for each
 #activity and each subject. 
@@ -106,7 +121,7 @@ for (row in seq(subjectID)) {
         subject <- subjectID[row]
         #print(paste(row, subject, sep=": "))
         for (act in activity[,2]) {
-                measurementColumns <- data[data$subjectID==subject & data$activity==act, 3:ncol(data)]
+                measurementColumns <- dataset[dataset$subjectID==subject & dataset$activity==act, 3:ncol(dataset)]
                 currentMeasurementMean <- apply(measurementColumns, 2, mean)
                 tidy[row,3:ncol(tidy)] <- currentMeasurementMean
         }
@@ -114,3 +129,8 @@ for (row in seq(subjectID)) {
 
 #Save the tidy data frame containing the aggregate data in a .txt file
 write.table(tidy, file='tidyData.txt')
+
+#Save the featureNames vetor containing the features names in our tidy
+#data into a .txt file. Then, we can conveniently copy these names from
+#the .txt file into our code book
+write.table(featureNames, file='featureNames.txt')
