@@ -25,7 +25,7 @@ For each record it is provided:
 - Its activity label. 
 - An identifier of the subject who carried out the experiment.
 
-The dataset (UCI HAR Dataset) includes the following files:
+The dataset (UCI HAR Dataset contained in 'getdata-projectfiles-UCI HAR Dataset.zip') includes the following files:
 ============================================================
 
 - 'README.txt'
