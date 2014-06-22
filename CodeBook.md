@@ -1,5 +1,5 @@
-Getting and Cleaning Data Course Project CodeBook
-==================================================
+Getting and Cleaning Data Course Project CodeBook (Updated)
+===========================================================
 
 ==================================================================
 Human Activity Recognition Using Smartphones Dataset Version 1.0
