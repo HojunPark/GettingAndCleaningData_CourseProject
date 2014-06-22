@@ -1,65 +1,67 @@
-#set the working directory to be the Course Project folder
-setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project")
-
 #TRAINING DATA
+#set the working directory to be the train folder
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project/UCI HAR Dataset/train")
+
 #read in the training data into R
-X_train <- read.table("./UCI HAR Dataset/train/X_train.txt")
-y_train <- read.table("./UCI HAR Dataset/train/y_train.txt")
-subject_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
+X_train <- read.table("X_train.txt")
+y_train <- read.table("y_train.txt")
+subject_train <- read.table("subject_train.txt")
 
 #========================================================================#
 
 #TEST DATA
+#set the working directory to be the train folder
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project/UCI HAR Dataset/test")
+
 #read in the test data into R
-X_test <- read.table("./UCI HAR Dataset/test/X_test.txt")
-y_test <- read.table("./UCI HAR Dataset/test/y_test.txt")
-subject_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
+X_test <- read.table("X_test.txt")
+y_test <- read.table("y_test.txt")
+subject_test <- read.table("subject_test.txt")
 
 #========================================================================#
 #========================================================================#
 #========================================================================#
 
-#1. Merge the training and the test sets to create one data set.
+#set the working directory to be the Course Project folder
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project")
 
+#1. Merges the training and the test sets to create one data set.
 #merge the training and test X, y, subject data together
-
 X <- rbind(X_train, X_test)
 y <- rbind(y_train, y_test)
 subject <- rbind(subject_train, subject_test)
 
-#concatenate the X, y, and subject data into a data frame
+#merge the X, y, and subject data into a data frame
 data <- data.frame(subject, y, X)
 
-#2. Extract only the measurements on the mean and standard deviation for
-#each measurement.
-#4. Appropriately label the data set with descriptive variable names.
+#2. Extracts only the measurements on the mean and standard deviation for each measurement.
+#mean measurement
+#4. Appropriately labels the data set with descriptive variable names.
+
+#set the working directory to be the UCI HAR Dataset folder that contains
+#the features.txt file
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project/UCI HAR Dataset")
 
 #read in the features.txt into R that contains the 561 feature names
-features <- read.table("./UCI HAR Dataset/features.txt")
+features <- read.table("features.txt")
 class(features[,1]) #integer
 class(features[,2]) #factor
 features[,2] <- as.character(features[,2])
 class(features[,2]) #character
 
 #replace the '-', ',', '(', ')', characters in the features character
-#vector with '_', "", "", and "" respectively to create valid R variable
-#names
+#vector with '_', "", "", and "" respectively
 features[,2] <- gsub("-", "_", features[,2])
 features[,2] <- gsub(",", "", features[,2])
 features[,2] <- gsub(")", "", features[,2])
 features[,2] <- gsub("\\(", "", features[,2])
 
-#initialize a character vector to store the features involving mean and
-#standard deviation data for subsetting, processing, and data frame
-#naming later on
-featureNames <- vector(mode="character")
+#set the working directory to be the Course Project folder
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project")
 
-#initialize a numeric vector to store the index of the features involving
-#mean and standard deviation for data processing later on
+featureNames <- vector(mode="character")
 featureColumns <- vector(mode="numeric")
 
-#extract the names and column indexes of the measurements of means and
-#standard deviations for creating a new data frame
 i <- 0
 for (name in features[,2]) {
         i <- i + 1
@@ -72,18 +74,18 @@ for (name in features[,2]) {
         }
 }
 
-#create a new data frame with subjectID, activity numbers and the columns
-#pertaining to measurements of the mean and standard deviation
 dataset <- cbind(subject, y, X[, featureColumns])
 
-#give names to the columns in the dataset data frame
 names(dataset) <- c("subjectID", "activity", featureNames)
 
 #3. Uses descriptive activity names to name the activities in the data set
+#set the working directory to be the UCI HAR Dataset folder that contains
+#the activity_labels.txt
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project/UCI HAR Dataset")
 
-#read in the activity_labels.txt into R that contains the numeric labels
-#for the 6 activities
-activityFile <- read.table("./UCI HAR Dataset/activity_labels.txt")
+#read in the activity_labels.txt into R that contains the
+#numeric labels for the 6 activities
+activityFile <- read.table("activity_labels.txt")
 activity <- activityFile
 class(activity[,1]) #integer
 class(activity[,2]) #factor
@@ -96,13 +98,14 @@ for (i in seq(activity[,1])) {
         y[,1] <- gsub(activity[i,1], activity[i,2], y[,1])   
 }
 
-#modify the dataset data frame with the updated y column containing
-#name-based labels
+#modify the data data frame with the modified y column
 dataset[,2] <- y
+
+#set the working directory to be the Course Project folder
+setwd("~/Desktop/Online/OWinter Term 2014/Getting and Cleaning Data/Course Project")
 
 # 5. Creates a second, independent tidy data set with the average of each
 #variable for each activity and each subject. 
-
 #initialize the columns of the tidy data frame
 subjectID <- rep(1:30, 1, each=6)
 activityVector <- rep(activity[,2], 30)
@@ -125,11 +128,7 @@ for (row in seq(subjectID)) {
 }
 
 #Save the tidy data frame containing the aggregate data in a .txt file
-write.table(tidy, file='tidyDataTXT.txt')
-
-#Additionally, save the tidy data frame containing the aggregate data in
-#a .csv file
-write.csv(tidy, file='tidyDataCSV.txt')
+write.table(tidy, file='tidyData.txt')
 
 #Save the featureNames vetor containing the features names in our tidy
 #data into a .txt file. Then, we can conveniently copy these names from
